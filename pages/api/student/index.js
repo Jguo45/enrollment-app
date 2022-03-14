@@ -7,7 +7,18 @@ export default async function handler(req, res) {
     driver: sqlite3.Database,
   })
 
-  const students = await db.all('SELECT * FROM student')
-
-  res.status(200).json(students)
+  if (req.method === 'GET') {
+    const students = await db.all('SELECT * FROM student')
+    res.status(200).json(students)
+  } else if (req.method === 'POST') {
+    const statement = await db.prepare(
+      'INSERT INTO Student (id, studentName, credits) VALUES (?, ?, ?)'
+    )
+    const result = statement.run(
+      req.body.studentId,
+      req.body.studentName,
+      req.body.credits
+    )
+    res.status(201).json(req.body)
+  }
 }

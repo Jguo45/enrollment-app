@@ -2,10 +2,6 @@
   padding: 0 2rem;
 }
 
-.table_header {
-  text-align: left;
-}
-
 .main {
   min-height: 100vh;
   padding: 4rem 0;
@@ -117,4 +113,8 @@
     width: 100%;
     flex-direction: column;
   }
+}
+
+.table_header {
+  text-align: left;
 }

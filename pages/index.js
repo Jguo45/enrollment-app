@@ -15,6 +15,7 @@ import {
   ActionIcon,
   Code,
   Space,
+  Select,
 } from '@mantine/core'
 import { useForm, formList } from '@mantine/form'
 import { Trash } from 'tabler-icons-react'
@@ -28,6 +29,11 @@ export default function Home() {
   const { data: studentData } = useSWR('/api/student', fetcher)
   const { data: instructorData } = useSWR('/api/instructor', fetcher)
   const { data: courseData } = useSWR('/api/course', fetcher)
+
+  const instructorList = (instructorData ?? []).map((instructor) => ({
+    value: instructor.id,
+    label: instructor.id,
+  }))
 
   const enrollmentRows = (enrollmentData ?? []).map((enrollment) => (
     <tr key={enrollment.id}>
@@ -197,6 +203,7 @@ export default function Home() {
             <form
               onSubmit={instructorForm.onSubmit((values) => {
                 console.log(values)
+                addRow('/api/instructor', values)
                 instructorForm.reset()
                 router.reload(window.location.pathname)
               })}
@@ -264,7 +271,8 @@ export default function Home() {
             <form
               onSubmit={courseForm.onSubmit((values) => {
                 console.log(values)
-                form.reset()
+                addRow('/api/course', values)
+                courseForm.reset()
                 router.reload(window.location.pathname)
               })}
             >
@@ -280,12 +288,17 @@ export default function Home() {
                 </Grid.Col>
 
                 <Grid.Col span={6}>
-                  <TextInput
+                  {/* <TextInput
                     required
                     label="Instructor ID"
                     placeholder="0"
                     sx={{ flex: 2 }}
                     {...courseForm.getInputProps('instructor')}
+                  /> */}
+                  <Select
+                    data={instructorList}
+                    label="Instructor"
+                    placeholder="Instructor"
                   />
                 </Grid.Col>
 

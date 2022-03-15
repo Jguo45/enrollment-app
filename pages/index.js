@@ -1,6 +1,7 @@
 import useSWR from 'swr'
 import styles from '../styles/Home.module.css'
 
+import { useState } from 'react'
 import {
   Box,
   Table,
@@ -18,59 +19,41 @@ import {
   Select,
 } from '@mantine/core'
 import { useForm, formList } from '@mantine/form'
-import { Trash } from 'tabler-icons-react'
 import { useRouter } from 'next/router'
+import {
+  getEnrollmentRows,
+  getStudentRows,
+  getInstructorRows,
+  getCourseRows,
+} from '../lib/fillTableRows'
+import { addRow } from '../lib/post'
+import { getInstructorList, getStudentList } from '../lib/listIds'
 
 export default function Home() {
+  const router = useRouter()
+
   const fetcher = async (url) => fetch(url).then((res) => res.json())
 
-  const router = useRouter()
   const { data: enrollmentData } = useSWR('/api/enrollment', fetcher)
   const { data: studentData } = useSWR('/api/student', fetcher)
   const { data: instructorData } = useSWR('/api/instructor', fetcher)
   const { data: courseData } = useSWR('/api/course', fetcher)
 
-  const instructorList = (instructorData ?? []).map((instructor) => ({
-    value: instructor.id,
-    label: instructor.id,
-  }))
+  const instructorList = getInstructorList(instructorData)
+  const studentList = getStudentList(studentData)
 
-  const enrollmentRows = (enrollmentData ?? []).map((enrollment) => (
-    <tr key={enrollment.id}>
-      <td>{enrollment.title}</td>
-      <td>{enrollment.instructorName}</td>
-      <td>{enrollment.studentName}</td>
-      <td>{enrollment.grade}</td>
-    </tr>
-  ))
+  const enrollmentRows = getEnrollmentRows(enrollmentData)
+  const studentRows = getStudentRows(studentData)
+  const instructorRows = getInstructorRows(instructorData)
+  const courseRows = getCourseRows(courseData)
 
-  const studentRows = (studentData ?? []).map((student) => (
-    <tr key={student.id}>
-      <td>{student.id}</td>
-      <td>{student.studentName}</td>
-      <td>{student.credits}</td>
-    </tr>
-  ))
-
-  const instructorRows = (instructorData ?? []).map((instructor) => (
-    <tr key={instructor.id}>
-      <td>{instructor.id}</td>
-      <td>{instructor.instructorName}</td>
-      <td>{instructor.department}</td>
-    </tr>
-  ))
-
-  const courseRows = (courseData ?? []).map((course) => (
-    <tr key={course.id}>
-      <td>{course.id}</td>
-      <td>{course.title}</td>
-      <td>{course.instructorName}</td>
-    </tr>
-  ))
+  const [removeValue, setValue] = useState('')
 
   const studentForm = useForm({
     initialValues: {
-      student: [{ studentId: 0, studentName: '', credits: 0 }],
+      studentId: '',
+      studentName: '',
+      credits: '',
     },
 
     validate: {
@@ -80,34 +63,22 @@ export default function Home() {
 
   const instructorForm = useForm({
     initialValues: {
-      instructor: [{ instructorId: 0, instructorName: '', department: '' }],
+      instructorId: 0,
+      instructorName: '',
+      department: '',
     },
   })
 
   const courseForm = useForm({
     initialValues: {
-      course: [{ courseId: 0, courseTitle: '', instructor: 0 }],
+      courseId: 0,
+      courseTitle: '',
+      instructor: 0,
     },
   })
 
-  const addRow = async (url, values) => {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(values),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }
-
   return (
     <>
-      {/* <Container> */}
-      {/* <Group grow>
-          <Input placeholder="Student" />
-          <Button variant="outline">Submit</Button>
-        </Group> */}
-
       <Table striped>
         <thead className={styles.table_header}>
           <tr>
@@ -146,6 +117,7 @@ export default function Home() {
                     label="Student Name"
                     placeholder="John"
                     sx={{ flex: 1 }}
+                    value={studentForm.values.studentName}
                     {...studentForm.getInputProps('studentName')}
                   />
                 </Grid.Col>
@@ -156,6 +128,7 @@ export default function Home() {
                     label="Credits"
                     placeholder="0"
                     sx={{ flex: 1 }}
+                    value={studentForm.values.credits}
                     {...studentForm.getInputProps('credits')}
                   />
                 </Grid.Col>
@@ -166,14 +139,34 @@ export default function Home() {
                     label="ID"
                     placeholder="0"
                     sx={{ flex: 1 }}
+                    value={studentForm.getInputProps('studentId')}
                     {...studentForm.getInputProps('studentId')}
                   />
                 </Grid.Col>
               </Grid>
 
-              {/* </Group> */}
               <Group position="center" mt="md">
-                <Button type="submit">Submit</Button>
+                <Button type="submit">Add Student</Button>
+              </Group>
+            </form>
+
+            <form
+              onSubmit={studentForm.onSubmit((values) => {
+                console.log(values)
+                addRow('/api/student', values)
+                studentForm.reset()
+                router.reload(window.location.pathname)
+              })}
+            >
+              <Group grow align="flex-end" position="center">
+                <Select
+                  data={studentList}
+                  label="Student"
+                  placeholder="Student"
+                  value={removeValue}
+                  onChange={setValue}
+                />
+                <Button type="submit">Delete</Button>
               </Group>
             </form>
             <Table striped>
@@ -215,6 +208,7 @@ export default function Home() {
                     label="Instructor Name"
                     placeholder="John"
                     sx={{ flex: 2 }}
+                    value={instructorForm.values.instructorName}
                     {...instructorForm.getInputProps('instructorName')}
                   />
                 </Grid.Col>
@@ -225,6 +219,7 @@ export default function Home() {
                     label="Department"
                     placeholder="0"
                     sx={{ flex: 2 }}
+                    value={instructorForm.values.department}
                     {...instructorForm.getInputProps('department')}
                   />
                 </Grid.Col>
@@ -235,6 +230,7 @@ export default function Home() {
                     label="ID"
                     placeholder="0"
                     sx={{ flex: 1 }}
+                    value={instructorForm.values.instructorId}
                     {...instructorForm.getInputProps('instructorId')}
                   />
                 </Grid.Col>
@@ -242,7 +238,7 @@ export default function Home() {
 
               {/* </Group> */}
               <Group position="center" mt="md">
-                <Button type="submit">Submit</Button>
+                <Button type="submit">Add Instructor</Button>
               </Group>
             </form>
             <Table striped>
@@ -283,22 +279,18 @@ export default function Home() {
                     label="Course Title"
                     placeholder="Math"
                     sx={{ flex: 2 }}
+                    value={courseForm.values.courseTitle}
                     {...courseForm.getInputProps('courseTitle')}
                   />
                 </Grid.Col>
 
                 <Grid.Col span={6}>
-                  {/* <TextInput
-                    required
-                    label="Instructor ID"
-                    placeholder="0"
-                    sx={{ flex: 2 }}
-                    {...courseForm.getInputProps('instructor')}
-                  /> */}
                   <Select
                     data={instructorList}
                     label="Instructor"
                     placeholder="Instructor"
+                    value={courseForm.values.instructor}
+                    {...courseForm.getInputProps('instructor')}
                   />
                 </Grid.Col>
 
@@ -308,6 +300,7 @@ export default function Home() {
                     label="ID"
                     placeholder="0"
                     sx={{ flex: 1 }}
+                    value={courseForm.values.courseId}
                     {...courseForm.getInputProps('courseId')}
                   />
                 </Grid.Col>
@@ -315,7 +308,7 @@ export default function Home() {
 
               {/* </Group> */}
               <Group position="center" mt="md">
-                <Button type="submit">Submit</Button>
+                <Button type="submit">Add Course</Button>
               </Group>
             </form>
             <Table striped>
@@ -331,7 +324,6 @@ export default function Home() {
           </Box>
         </Grid.Col>
       </Grid>
-      {/* </Container> */}
     </>
   )
 }

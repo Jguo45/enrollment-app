@@ -6,7 +6,7 @@ async function setup() {
     filename: './mydb.sqlite',
     driver: sqlite3.Database,
   })
-  db.get('PRAGMA foreign_keys = ON')
+  await db.get('PRAGMA foreign_keys = ON')
 
   await db.migrate({ force: 'last' })
 

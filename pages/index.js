@@ -26,7 +26,7 @@ import {
   getInstructorRows,
   getCourseRows,
 } from '../lib/fillTableRows'
-import { addRow } from '../lib/post'
+import { post, remove } from '../lib/dbCommands'
 import { getInstructorList, getStudentList } from '../lib/listIds'
 
 export default function Home() {
@@ -77,6 +77,12 @@ export default function Home() {
     },
   })
 
+  const deleteStudentForm = useForm({
+    initialValues: {
+      deleteStudent: 0,
+    },
+  })
+
   return (
     <>
       <Table striped>
@@ -105,7 +111,7 @@ export default function Home() {
             <form
               onSubmit={studentForm.onSubmit((values) => {
                 console.log(values)
-                addRow('/api/student', values)
+                post('/api/student', values)
                 studentForm.reset()
                 router.reload(window.location.pathname)
               })}
@@ -139,7 +145,7 @@ export default function Home() {
                     label="ID"
                     placeholder="0"
                     sx={{ flex: 1 }}
-                    value={studentForm.getInputProps('studentId')}
+                    value={studentForm.values.studentId}
                     {...studentForm.getInputProps('studentId')}
                   />
                 </Grid.Col>
@@ -151,11 +157,15 @@ export default function Home() {
             </form>
 
             <form
-              onSubmit={studentForm.onSubmit((values) => {
-                console.log(values)
-                addRow('/api/student', values)
-                studentForm.reset()
-                router.reload(window.location.pathname)
+              onSubmit={deleteStudentForm.onSubmit((values) => {
+                console.log(values.deleteStudent)
+                const res = remove('/api/student', values.deleteStudent)
+                if (!res.ok) {
+                  console.log(res)
+                } else {
+                  deleteStudentForm.reset()
+                  router.reload(window.location.pathname)
+                }
               })}
             >
               <Group grow align="flex-end" position="center">
@@ -163,8 +173,8 @@ export default function Home() {
                   data={studentList}
                   label="Student"
                   placeholder="Student"
-                  value={removeValue}
-                  onChange={setValue}
+                  value={deleteStudentForm.values.deleteStudent}
+                  {...deleteStudentForm.getInputProps('deleteStudent')}
                 />
                 <Button type="submit">Delete</Button>
               </Group>
@@ -196,7 +206,7 @@ export default function Home() {
             <form
               onSubmit={instructorForm.onSubmit((values) => {
                 console.log(values)
-                addRow('/api/instructor', values)
+                post('/api/instructor', values)
                 instructorForm.reset()
                 router.reload(window.location.pathname)
               })}
@@ -267,7 +277,7 @@ export default function Home() {
             <form
               onSubmit={courseForm.onSubmit((values) => {
                 console.log(values)
-                addRow('/api/course', values)
+                post('/api/course', values)
                 courseForm.reset()
                 router.reload(window.location.pathname)
               })}

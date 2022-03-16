@@ -86,7 +86,13 @@ export default function Home() {
     },
   })
 
-  const notifications = useNotifications
+  const deleteInstructorForm = useForm({
+    initialValues: {
+      deleteInstructor: 0,
+    },
+  })
+
+  const notifications = useNotifications()
 
   return (
     <>
@@ -160,17 +166,7 @@ export default function Home() {
                 <Button type="submit">Add Student</Button>
               </Group>
             </form>
-            <Alert
-              icon={<AlertCircle size={16} />}
-              title="Bummer!"
-              color="red"
-              radius="md"
-              withCloseButton
-              closeButtonLabel="Close"
-            >
-              Something terrible happened! You made a mistake and there is no
-              going back, your data was lost forever!
-            </Alert>
+
             <form
               onSubmit={deleteStudentForm.onSubmit(async (values) => {
                 if (values.deleteStudent !== 0) {
@@ -179,8 +175,9 @@ export default function Home() {
                   console.log(res)
                   if (!res.ok) {
                     notifications.showNotification({
-                      title: 'Default notification',
-                      message: 'You cannot do that',
+                      title: 'Unable to Delete',
+                      message: 'Student exists in enrollment table',
+                      color: 'red',
                     })
                   } else {
                     console.log(`Res: ${JSON.stringify(res, null, 2)}`)
@@ -273,6 +270,42 @@ export default function Home() {
                 <Button type="submit">Add Instructor</Button>
               </Group>
             </form>
+
+            <form
+              onSubmit={deleteInstructorForm.onSubmit(async (values) => {
+                if (values.deleteInstructor !== 0) {
+                  console.log(`value: ${values.deleteInstructor}`)
+                  const res = await remove(
+                    '/api/student',
+                    values.deleteInstructor
+                  )
+                  console.log(res)
+                  if (!res.ok) {
+                    notifications.showNotification({
+                      title: 'Unable to Delete',
+                      message: 'Instructor exists in enrollment table',
+                      color: 'red',
+                    })
+                  } else {
+                    console.log(`Res: ${JSON.stringify(res, null, 2)}`)
+                    deleteInstructorForm.reset()
+                    router.reload(window.location.pathname)
+                  }
+                }
+              })}
+            >
+              <Group grow align="flex-end" position="center">
+                <Select
+                  data={instructorList}
+                  label="Instructor"
+                  placeholder="Instructor"
+                  value={deleteInstructorForm.values.deleteInstructor}
+                  {...deleteInstructorForm.getInputProps('deleteInstructor')}
+                />
+                <Button type="submit">Delete</Button>
+              </Group>
+            </form>
+
             <Table striped>
               <thead className={styles.table_header}>
                 <tr>

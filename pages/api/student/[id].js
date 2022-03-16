@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       const result = statement.run(req.query.id)
       res.status(200).json(result)
     } else {
-      res.status(409).json({ error: 'Student is enrolled in a class' })
+      res.status(409)
     }
   }
 }

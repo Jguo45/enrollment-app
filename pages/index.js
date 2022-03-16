@@ -29,8 +29,13 @@ import {
   getInstructorRows,
   getCourseRows,
 } from '../lib/fillTableRows'
-import { post, remove } from '../lib/dbCommands'
-import { getInstructorList, getStudentList } from '../lib/listIds'
+import { post, remove, update } from '../lib/dbCommands'
+import {
+  getCourseList,
+  getEnrollmentList,
+  getInstructorList,
+  getStudentList,
+} from '../lib/listIds'
 
 export default function Home() {
   const router = useRouter()
@@ -42,8 +47,10 @@ export default function Home() {
   const { data: instructorData } = useSWR('/api/instructor', fetcher)
   const { data: courseData } = useSWR('/api/course', fetcher)
 
-  const instructorList = getInstructorList(instructorData)
+  const enrollmentList = getEnrollmentList(enrollmentData)
   const studentList = getStudentList(studentData)
+  const instructorList = getInstructorList(instructorData)
+  const courseList = getCourseList(courseData)
 
   const enrollmentRows = getEnrollmentRows(enrollmentData)
   const studentRows = getStudentRows(studentData)
@@ -66,7 +73,7 @@ export default function Home() {
 
   const instructorForm = useForm({
     initialValues: {
-      instructorId: 0,
+      instructorId: '',
       instructorName: '',
       department: '',
     },
@@ -74,7 +81,7 @@ export default function Home() {
 
   const courseForm = useForm({
     initialValues: {
-      courseId: 0,
+      courseId: '',
       courseTitle: '',
       instructor: 0,
     },
@@ -92,6 +99,32 @@ export default function Home() {
     },
   })
 
+  const deleteCourseForm = useForm({
+    initialValues: {
+      deleteCourse: 0,
+    },
+  })
+
+  const enrollForm = useForm({
+    initialValues: {
+      studentId: 0,
+      courseId: 0,
+    },
+  })
+
+  const gradeForm = useForm({
+    initialValues: {
+      enrollmentId: 0,
+      grade: '',
+    },
+  })
+
+  const unenrollForm = useForm({
+    initialValues: {
+      enrollmentId: 0,
+    },
+  })
+
   const notifications = useNotifications()
 
   return (
@@ -99,6 +132,7 @@ export default function Home() {
       <Table striped>
         <thead className={styles.table_header}>
           <tr>
+            <th>#</th>
             <th>Course Title</th>
             <th>Instructor Name</th>
             <th>Student Name</th>
@@ -107,6 +141,97 @@ export default function Home() {
         </thead>
         <tbody>{enrollmentRows}</tbody>
       </Table>
+
+      <Box>
+        <form
+          onSubmit={enrollForm.onSubmit(async (values) => {
+            const res = await post('/api/enrollment', values)
+            if (res.ok) {
+              enrollForm.reset()
+              router.reload(window.location.pathname)
+            } else {
+              notifications.showNotification({
+                title: 'Unable to Enroll',
+                message: 'Student is already enrolled for that class',
+                color: 'red',
+              })
+            }
+          })}
+        >
+          <Group align="flex-end" position="center">
+            <Select
+              data={studentList}
+              label="Student"
+              placeholder="Student"
+              value={enrollForm.values.studentId}
+              {...enrollForm.getInputProps('studentId')}
+            />
+
+            <Select
+              data={courseList}
+              label="Course"
+              placeholder="Course"
+              value={enrollForm.values.courseId}
+              {...enrollForm.getInputProps('courseId')}
+            />
+            <Button type="submit">Enroll</Button>
+          </Group>
+        </form>
+      </Box>
+
+      <Box>
+        <form
+          onSubmit={gradeForm.onSubmit(async (values) => {
+            console.log(values)
+            update('/api/enrollment', values.enrollmentId, values)
+            gradeForm.reset()
+            router.reload(window.location.pathname)
+          })}
+        >
+          <Group align="flex-end" position="center">
+            <Select
+              data={enrollmentList}
+              label="Enrollment ID"
+              placeholder="ID #"
+              value={gradeForm.values.enrollmentId}
+              {...gradeForm.getInputProps('enrollmentId')}
+            />
+
+            <TextInput
+              label="Grade"
+              placeholder="0"
+              value={gradeForm.values.grade}
+              {...gradeForm.getInputProps('grade')}
+            />
+
+            <Button type="submit">Update</Button>
+          </Group>
+        </form>
+      </Box>
+
+      <Box>
+        <form
+          onSubmit={unenrollForm.onSubmit(async (values) => {
+            if (values.enrollmentId !== 0) {
+              console.log(values.enrollmentId)
+              remove('/api/enrollment', values.enrollmentId)
+              unenrollForm.reset()
+              router.reload(window.location.pathname)
+            }
+          })}
+        >
+          <Group align="flex-end" position="center">
+            <Select
+              data={enrollmentList}
+              label="Enrollment ID"
+              placeholder="ID #"
+              value={unenrollForm.values.enrollmentId}
+              {...unenrollForm.getInputProps('enrollmentId')}
+            />
+            <Button type="submit">Unenroll</Button>
+          </Group>
+        </form>
+      </Box>
       <Grid justify="space-around">
         <Grid.Col span={4}>
           <Box
@@ -246,7 +371,7 @@ export default function Home() {
                   <TextInput
                     required
                     label="Department"
-                    placeholder="0"
+                    placeholder="English"
                     sx={{ flex: 2 }}
                     value={instructorForm.values.department}
                     {...instructorForm.getInputProps('department')}
@@ -376,6 +501,39 @@ export default function Home() {
                 <Button type="submit">Add Course</Button>
               </Group>
             </form>
+
+            <form
+              onSubmit={deleteCourseForm.onSubmit(async (values) => {
+                if (values.deleteCourse !== 0) {
+                  console.log(`value: ${values.deleteCourse}`)
+                  const res = await remove('/api/course', values.deleteCourse)
+                  console.log(res)
+                  if (!res.ok) {
+                    notifications.showNotification({
+                      title: 'Unable to Delete',
+                      message: 'Course exists in enrollment table',
+                      color: 'red',
+                    })
+                  } else {
+                    console.log(`Res: ${JSON.stringify(res, null, 2)}`)
+                    deleteCourseForm.reset()
+                    router.reload(window.location.pathname)
+                  }
+                }
+              })}
+            >
+              <Group grow align="flex-end" position="center">
+                <Select
+                  data={courseList}
+                  label="Course"
+                  placeholder="Course"
+                  value={deleteCourseForm.values.deleteCourse}
+                  {...deleteCourseForm.getInputProps('deleteCourse')}
+                />
+                <Button type="submit">Delete</Button>
+              </Group>
+            </form>
+
             <Table striped>
               <thead className={styles.table_header}>
                 <tr>

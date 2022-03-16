@@ -17,8 +17,8 @@ export default async function handler(req, res) {
       'SELECT * FROM Enrollment WHERE studentId = ?',
       [req.query.id]
     )
-    console.log(student)
-    if (student === []) {
+    // console.log(Object.keys(student).length === 0)
+    if (Object.keys(student).length === 0) {
       const statement = await db.prepare(
         'DELETE FROM Student WHERE Student.id = ?'
       )

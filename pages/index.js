@@ -3,6 +3,7 @@ import styles from '../styles/Home.module.css'
 
 import { useState } from 'react'
 import {
+  Alert,
   Box,
   Table,
   Grid,
@@ -18,6 +19,8 @@ import {
   Space,
   Select,
 } from '@mantine/core'
+import { useNotifications } from '@mantine/notifications'
+import { AlertCircle } from 'tabler-icons-react'
 import { useForm, formList } from '@mantine/form'
 import { useRouter } from 'next/router'
 import {
@@ -82,6 +85,8 @@ export default function Home() {
       deleteStudent: 0,
     },
   })
+
+  const notifications = useNotifications
 
   return (
     <>
@@ -155,16 +160,33 @@ export default function Home() {
                 <Button type="submit">Add Student</Button>
               </Group>
             </form>
-
+            <Alert
+              icon={<AlertCircle size={16} />}
+              title="Bummer!"
+              color="red"
+              radius="md"
+              withCloseButton
+              closeButtonLabel="Close"
+            >
+              Something terrible happened! You made a mistake and there is no
+              going back, your data was lost forever!
+            </Alert>
             <form
-              onSubmit={deleteStudentForm.onSubmit((values) => {
-                console.log(values.deleteStudent)
-                const res = remove('/api/student', values.deleteStudent)
-                if (!res.ok) {
+              onSubmit={deleteStudentForm.onSubmit(async (values) => {
+                if (values.deleteStudent !== 0) {
+                  console.log(`value: ${values.deleteStudent}`)
+                  const res = await remove('/api/student', values.deleteStudent)
                   console.log(res)
-                } else {
-                  deleteStudentForm.reset()
-                  router.reload(window.location.pathname)
+                  if (!res.ok) {
+                    notifications.showNotification({
+                      title: 'Default notification',
+                      message: 'You cannot do that',
+                    })
+                  } else {
+                    console.log(`Res: ${JSON.stringify(res, null, 2)}`)
+                    deleteStudentForm.reset()
+                    router.reload(window.location.pathname)
+                  }
                 }
               })}
             >

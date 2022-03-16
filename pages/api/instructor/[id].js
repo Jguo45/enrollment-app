@@ -21,7 +21,6 @@ export default async function handler(req, res) {
       'SELECT * FROM Enrollment JOIN Course ON Enrollment.courseId = Course.id JOIN Instructor ON Course.instructorId = Instructor.id WHERE instructorId = ?',
       [req.query.id]
     )
-    // console.log(Object.keys(student).length === 0)
     if (Object.keys(instructor).length === 0) {
       const statement = await db.prepare(
         'DELETE FROM Instructor WHERE instructor.id = ?'
@@ -29,7 +28,7 @@ export default async function handler(req, res) {
       const result = statement.run(req.query.id)
       res.status(200).json(result)
     } else {
-      res.status(409)
+      res.status(409).json()
     }
   }
 }

@@ -276,7 +276,7 @@ export default function Home() {
                 if (values.deleteInstructor !== 0) {
                   console.log(`value: ${values.deleteInstructor}`)
                   const res = await remove(
-                    '/api/student',
+                    '/api/instructor',
                     values.deleteInstructor
                   )
                   console.log(res)

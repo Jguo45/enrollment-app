@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       'SELECT 1 FROM Enrollment WHERE studentId = ? AND courseId = ?',
       [req.body.studentId, req.body.courseId]
     )
-    if (exists === null) {
+    if (Object.keys(exists).length === 0) {
       const statement = await db.prepare(
         'INSERT INTO Enrollment (studentId, courseId) VALUES (?, ?)'
       )

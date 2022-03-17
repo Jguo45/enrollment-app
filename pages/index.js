@@ -1,27 +1,16 @@
 import useSWR from 'swr'
 import styles from '../styles/Home.module.css'
-
-import { useState } from 'react'
 import {
-  Alert,
   Box,
   Table,
   Grid,
   Group,
   Button,
-  Container,
-  Input,
-  Text,
   TextInput,
-  Switch,
-  ActionIcon,
-  Code,
-  Space,
   Select,
 } from '@mantine/core'
 import { useNotifications } from '@mantine/notifications'
-import { AlertCircle } from 'tabler-icons-react'
-import { useForm, formList } from '@mantine/form'
+import { useForm } from '@mantine/form'
 import { useRouter } from 'next/router'
 import {
   getEnrollmentRows,
@@ -56,8 +45,6 @@ export default function Home() {
   const studentRows = getStudentRows(studentData)
   const instructorRows = getInstructorRows(instructorData)
   const courseRows = getCourseRows(courseData)
-
-  const [removeValue, setValue] = useState('')
 
   const studentForm = useForm({
     initialValues: {
@@ -144,6 +131,7 @@ export default function Home() {
 
       <Box>
         <form
+          // ENROLLMENT
           onSubmit={enrollForm.onSubmit(async (values) => {
             const res = await post('/api/enrollment', values)
             if (res.ok) {
@@ -181,8 +169,8 @@ export default function Home() {
 
       <Box>
         <form
+          // UPDATE GRADE
           onSubmit={gradeForm.onSubmit(async (values) => {
-            console.log(values)
             update('/api/enrollment', values.enrollmentId, values)
             gradeForm.reset()
             router.reload(window.location.pathname)
@@ -211,9 +199,9 @@ export default function Home() {
 
       <Box>
         <form
+          // UNENROLL FROM CLASS
           onSubmit={unenrollForm.onSubmit(async (values) => {
             if (values.enrollmentId !== 0) {
-              console.log(values.enrollmentId)
               remove('/api/enrollment', values.enrollmentId)
               unenrollForm.reset()
               router.reload(window.location.pathname)
@@ -232,6 +220,7 @@ export default function Home() {
           </Group>
         </form>
       </Box>
+
       <Grid justify="space-around">
         <Grid.Col span={4}>
           <Box
@@ -245,8 +234,8 @@ export default function Home() {
             mx="auto"
           >
             <form
+              // ADD STUDENT
               onSubmit={studentForm.onSubmit((values) => {
-                console.log(values)
                 post('/api/student', values)
                 studentForm.reset()
                 router.reload(window.location.pathname)
@@ -293,21 +282,19 @@ export default function Home() {
             </form>
 
             <form
+              // DELETE STUDENT
               onSubmit={deleteStudentForm.onSubmit(async (values) => {
                 if (values.deleteStudent !== 0) {
-                  console.log(`value: ${values.deleteStudent}`)
                   const res = await remove('/api/student', values.deleteStudent)
-                  console.log(res)
-                  if (!res.ok) {
+                  if (res.ok) {
+                    deleteStudentForm.reset()
+                    router.reload(window.location.pathname)
+                  } else {
                     notifications.showNotification({
                       title: 'Unable to Delete',
                       message: 'Student exists in enrollment table',
                       color: 'red',
                     })
-                  } else {
-                    console.log(`Res: ${JSON.stringify(res, null, 2)}`)
-                    deleteStudentForm.reset()
-                    router.reload(window.location.pathname)
                   }
                 }
               })}
@@ -323,6 +310,7 @@ export default function Home() {
                 <Button type="submit">Delete</Button>
               </Group>
             </form>
+
             <Table striped>
               <thead className={styles.table_header}>
                 <tr>
@@ -348,8 +336,8 @@ export default function Home() {
             mx="auto"
           >
             <form
+              // ADD INSTRUCTOR
               onSubmit={instructorForm.onSubmit((values) => {
-                console.log(values)
                 post('/api/instructor', values)
                 instructorForm.reset()
                 router.reload(window.location.pathname)
@@ -390,21 +378,19 @@ export default function Home() {
                 </Grid.Col>
               </Grid>
 
-              {/* </Group> */}
               <Group position="center" mt="md">
                 <Button type="submit">Add Instructor</Button>
               </Group>
             </form>
 
             <form
+              // DELETE INSTRUCTOR
               onSubmit={deleteInstructorForm.onSubmit(async (values) => {
                 if (values.deleteInstructor !== 0) {
-                  console.log(`value: ${values.deleteInstructor}`)
                   const res = await remove(
                     '/api/instructor',
                     values.deleteInstructor
                   )
-                  console.log(res)
                   if (!res.ok) {
                     notifications.showNotification({
                       title: 'Unable to Delete',
@@ -412,7 +398,6 @@ export default function Home() {
                       color: 'red',
                     })
                   } else {
-                    console.log(`Res: ${JSON.stringify(res, null, 2)}`)
                     deleteInstructorForm.reset()
                     router.reload(window.location.pathname)
                   }
@@ -443,6 +428,7 @@ export default function Home() {
             </Table>
           </Box>
         </Grid.Col>
+
         <Grid.Col span={4}>
           <Box
             sx={{
@@ -455,8 +441,8 @@ export default function Home() {
             mx="auto"
           >
             <form
+              // ADD COURSE
               onSubmit={courseForm.onSubmit((values) => {
-                console.log(values)
                 post('/api/course', values)
                 courseForm.reset()
                 router.reload(window.location.pathname)
@@ -496,18 +482,16 @@ export default function Home() {
                 </Grid.Col>
               </Grid>
 
-              {/* </Group> */}
               <Group position="center" mt="md">
                 <Button type="submit">Add Course</Button>
               </Group>
             </form>
 
             <form
+              // DELETE COURSE
               onSubmit={deleteCourseForm.onSubmit(async (values) => {
                 if (values.deleteCourse !== 0) {
-                  console.log(`value: ${values.deleteCourse}`)
                   const res = await remove('/api/course', values.deleteCourse)
-                  console.log(res)
                   if (!res.ok) {
                     notifications.showNotification({
                       title: 'Unable to Delete',
@@ -515,7 +499,6 @@ export default function Home() {
                       color: 'red',
                     })
                   } else {
-                    console.log(`Res: ${JSON.stringify(res, null, 2)}`)
                     deleteCourseForm.reset()
                     router.reload(window.location.pathname)
                   }

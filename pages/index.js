@@ -130,6 +130,7 @@ export default function Home() {
       </Table>
 
       <Box>
+        <h1 className={styles.title}>Manage Enrollment</h1>
         <form
           // ENROLLMENT
           onSubmit={enrollForm.onSubmit(async (values) => {
@@ -223,6 +224,7 @@ export default function Home() {
 
       <Grid justify="space-around">
         <Grid.Col span={4}>
+          <h1 className={styles.title}>Manage Students</h1>
           <Box
             sx={{
               maxWidth: 500,
@@ -325,6 +327,7 @@ export default function Home() {
         </Grid.Col>
 
         <Grid.Col span={4}>
+          <h1 className={styles.title}>Manage Instructors</h1>
           <Box
             sx={{
               maxWidth: 500,
@@ -430,6 +433,7 @@ export default function Home() {
         </Grid.Col>
 
         <Grid.Col span={4}>
+          <h1 className={styles.title}>Manage Courses</h1>
           <Box
             sx={{
               maxWidth: 500,

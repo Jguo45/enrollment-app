@@ -14,11 +14,16 @@ export default async function handler(req, res) {
     const statement = await db.prepare(
       'INSERT INTO Student (id, studentName, credits) VALUES (?, ?, ?)'
     )
-    const result = statement.run(
-      req.body.studentId,
-      req.body.studentName,
-      req.body.credits
-    )
-    res.status(201).json(req.body)
+    try {
+      const result = await statement.run(
+        req.body.studentId,
+        req.body.studentName,
+        req.body.credits
+      )
+      console.log(result)
+      res.status(201).json(req.body)
+    } catch (err) {
+      res.status(409).json()
+    }
   }
 }

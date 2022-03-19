@@ -108,7 +108,7 @@ export default function Home() {
 
   const unenrollForm = useForm({
     initialValues: {
-      enrollmentId: 0,
+      unenrollId: 0,
     },
   })
 
@@ -172,7 +172,7 @@ export default function Home() {
         <form
           // UPDATE GRADE
           onSubmit={gradeForm.onSubmit(async (values) => {
-            update('/api/enrollment', values.enrollmentId, values)
+            await update('/api/enrollment', values.enrollmentId, values)
             gradeForm.reset()
             router.reload(window.location.pathname)
           })}
@@ -202,8 +202,9 @@ export default function Home() {
         <form
           // UNENROLL FROM CLASS
           onSubmit={unenrollForm.onSubmit(async (values) => {
-            if (values.enrollmentId !== 0) {
-              remove('/api/enrollment', values.enrollmentId)
+            // console.log(values)
+            if (values.unenrollId !== 0) {
+              await remove('/api/enrollment', values.unenrollId)
               unenrollForm.reset()
               router.reload(window.location.pathname)
             }
@@ -214,8 +215,8 @@ export default function Home() {
               data={enrollmentList}
               label="Enrollment ID"
               placeholder="ID #"
-              value={unenrollForm.values.enrollmentId}
-              {...unenrollForm.getInputProps('enrollmentId')}
+              value={unenrollForm.values.unenrollId}
+              {...unenrollForm.getInputProps('unenrollId')}
             />
             <Button type="submit">Unenroll</Button>
           </Group>
@@ -237,10 +238,18 @@ export default function Home() {
           >
             <form
               // ADD STUDENT
-              onSubmit={studentForm.onSubmit((values) => {
-                post('/api/student', values)
+              onSubmit={studentForm.onSubmit(async (values) => {
+                const res = await post('/api/student', values)
                 studentForm.reset()
-                router.reload(window.location.pathname)
+                if (res.ok) {
+                  router.reload(window.location.pathname)
+                } else {
+                  notifications.showNotification({
+                    title: 'Unable to Add Student',
+                    message: 'Student ID already exists',
+                    color: 'red',
+                  })
+                }
               })}
             >
               <Grid columns={24}>
@@ -340,8 +349,8 @@ export default function Home() {
           >
             <form
               // ADD INSTRUCTOR
-              onSubmit={instructorForm.onSubmit((values) => {
-                post('/api/instructor', values)
+              onSubmit={instructorForm.onSubmit(async (values) => {
+                await post('/api/instructor', values)
                 instructorForm.reset()
                 router.reload(window.location.pathname)
               })}
@@ -446,8 +455,8 @@ export default function Home() {
           >
             <form
               // ADD COURSE
-              onSubmit={courseForm.onSubmit((values) => {
-                post('/api/course', values)
+              onSubmit={courseForm.onSubmit(async (values) => {
+                await post('/api/course', values)
                 courseForm.reset()
                 router.reload(window.location.pathname)
               })}

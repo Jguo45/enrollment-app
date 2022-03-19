@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     const statement = await db.prepare(
       'DELETE FROM Enrollment WHERE Enrollment.id = ?'
     )
-    const result = statement.run(req.query.id)
+    const result = await statement.run(req.query.id)
     res.status(200).json(result)
   }
 }

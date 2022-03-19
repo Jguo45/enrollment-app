@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       const statement = await db.prepare(
         'DELETE FROM Student WHERE Student.id = ?'
       )
-      const result = statement.run(req.query.id)
+      const result = await statement.run(req.query.id)
       res.status(200).json(result)
     } else {
       res.status(409).json()

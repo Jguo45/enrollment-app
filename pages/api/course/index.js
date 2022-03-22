@@ -13,14 +13,18 @@ export default async function handler(req, res) {
     )
     res.status(200).json(courses)
   } else if (req.method === 'POST') {
-    const statement = await db.prepare(
-      'INSERT INTO Course (id, title, instructorId) VALUES (?, ?, ?)'
-    )
-    const result = statement.run(
-      req.body.courseId,
-      req.body.courseTitle,
-      req.body.instructor
-    )
-    res.status(201).json(req.body)
+    try {
+      const statement = await db.prepare(
+        'INSERT INTO Course (id, title, instructorId) VALUES (?, ?, ?)'
+      )
+      const result = await statement.run(
+        req.body.courseId,
+        req.body.courseTitle,
+        req.body.instructor
+      )
+      res.status(201).json(result)
+    } catch (err) {
+      res.status(409).json()
+    }
   }
 }

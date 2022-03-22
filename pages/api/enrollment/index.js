@@ -22,9 +22,9 @@ export default async function handler(req, res) {
       const statement = await db.prepare(
         'INSERT INTO Enrollment (studentId, courseId) VALUES (?, ?)'
       )
-      const result = statement.run(req.body.studentId, req.body.courseId)
+      const result = await statement.run(req.body.studentId, req.body.courseId)
 
-      res.status(201).json(req.body)
+      res.status(201).json(result)
     } else {
       res.status(409).json()
     }

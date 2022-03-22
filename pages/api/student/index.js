@@ -20,8 +20,7 @@ export default async function handler(req, res) {
         req.body.studentName,
         req.body.credits
       )
-      console.log(result)
-      res.status(201).json(req.body)
+      res.status(201).json(result)
     } catch (err) {
       res.status(409).json()
     }

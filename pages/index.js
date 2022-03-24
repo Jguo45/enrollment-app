@@ -11,9 +11,10 @@ import ManageCourse from '../components/manageCourse'
 import ManageEnrollment from '../components/manageEnrollment'
 
 export default function Home() {
-  const router = useRouter()
-
   const fetcher = async (url) => fetch(url).then((res) => res.json())
+
+  const router = useRouter()
+  const notifications = useNotifications()
 
   const { data: enrollmentData } = useSWR('/api/enrollment', fetcher)
   const { data: studentData } = useSWR('/api/student', fetcher)
@@ -21,8 +22,6 @@ export default function Home() {
   const { data: courseData } = useSWR('/api/course', fetcher)
 
   const enrollmentRows = getEnrollmentRows(enrollmentData)
-
-  const notifications = useNotifications()
 
   return (
     <>
@@ -42,6 +41,7 @@ export default function Home() {
       </Table>
 
       <h1 className={styles.title}>Manage Enrollment</h1>
+
       <ManageEnrollment
         enrollmentData={enrollmentData}
         studentData={studentData}
@@ -72,6 +72,7 @@ export default function Home() {
 
         <Grid.Col span={4}>
           <h1 className={styles.title}>Manage Courses</h1>
+
           <ManageCourse
             courseData={courseData}
             instructorData={instructorData}
